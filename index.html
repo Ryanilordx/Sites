@@ -4,200 +4,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Professional Clicker Challenge</title>
+    <title>Ultimate Chicken Chase</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             text-align: center;
-            background: linear-gradient(120deg, #141e30, #243b55);
-            color: #fff;
+            background: linear-gradient(120deg, #1e3c72, #2a5298);
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100vh;
             overflow: hidden;
-            animation: gradientAnimation 8s infinite alternate;
+            color: #fff;
+            animation: gradientBackground 10s infinite alternate;
         }
-        @keyframes gradientAnimation {
-            0% { background: linear-gradient(120deg, #141e30, #243b55); }
-            50% { background: linear-gradient(120deg, #243b55, #6dd5ed); }
-            100% { background: linear-gradient(120deg, #141e30, #243b55); }
+        @keyframes gradientBackground {
+            0% { background: linear-gradient(120deg, #1e3c72, #2a5298); }
+            50% { background: linear-gradient(120deg, #2a5298, #6dd5ed); }
+            100% { background: linear-gradient(120deg, #1e3c72, #2a5298); }
         }
         h1 {
-            font-size: 3.5em;
-            margin-bottom: 0.5em;
-            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7);
+            font-size: 3em;
+            margin-top: 20px;
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.5);
         }
         #game-container {
-            max-width: 800px;
+            position: relative;
+            width: 90%;
+            height: 75vh;
             margin: auto;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.9);
+            border: 5px solid #fff;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.7);
         }
-        #score, #level, #timer {
-            font-size: 2.5em;
-            margin: 10px 0;
+        #chicken {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: url('https://i.imgur.com/8Q5RJsK.png') no-repeat center center;
+            background-size: contain;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        #chicken:hover {
+            transform: scale(1.2);
+        }
+        .obstacle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: url('https://i.imgur.com/Wo6rT9V.png') no-repeat center center;
+            background-size: contain;
+            animation: moveObstacle 3s linear infinite;
+        }
+        @keyframes moveObstacle {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(50px); }
+            100% { transform: translateY(0); }
+        }
+        #scoreboard {
+            font-size: 1.5em;
+            margin-top: 20px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
         }
         button {
-            font-size: 1.8em;
-            padding: 20px 40px;
+            font-size: 1.5em;
+            padding: 10px 20px;
             margin: 20px;
             border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            background-color: #ff5722;
+            border-radius: 10px;
+            background-color: #ff9800;
             color: #fff;
-            transition: all 0.3s ease;
-            box-shadow: 0px 8px 20px rgba(255, 87, 34, 0.4);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #e64a19;
-            transform: scale(1.1);
-        }
-        #click-btn {
-            display: none;
-        }
-        #leaderboard {
-            margin-top: 20px;
-            font-size: 1.5em;
-            text-align: left;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 15px;
-        }
-        .explosion-effect {
-            position: absolute;
-            pointer-events: none;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,0,0,0) 70%);
-            border-radius: 50%;
-            animation: explosion 1s ease-out;
-            opacity: 0;
-        }
-        @keyframes explosion {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(3); opacity: 0; }
+            background-color: #e65100;
         }
     </style>
 </head>
 <body>
-    <h1>Ultimate Professional Clicker Challenge</h1>
-    <p class="challenge-text">Test your clicking skills like never before!</p>
+    <h1>Ultimate Chicken Chase</h1>
+    <p id="instructions">Catch the chicken before it escapes! Avoid obstacles!</p>
     <div id="game-container">
-        <p id="score">Score: 0</p>
-        <p id="level">Level: 1</p>
-        <p id="timer">Time: 30s</p>
-        <button id="start-btn">Start Game</button>
-        <button id="click-btn">Click Me!</button>
-        <div id="leaderboard">
-            <h3>Leaderboard</h3>
-            <ul id="leaderboard-list"></ul>
-        </div>
+        <div id="chicken"></div>
     </div>
-    <audio id="click-sound">
-        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
-    </audio>
+    <p id="scoreboard">Score: 0</p>
+    <audio id="chicken-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+    <audio id="obstacle-sound" src="https://www.soundjay.com/button/beep-10.wav"></audio>
     <script>
+        const chicken = document.getElementById("chicken");
+        const gameContainer = document.getElementById("game-container");
+        const scoreboard = document.getElementById("scoreboard");
+        const chickenSound = document.getElementById("chicken-sound");
+        const obstacleSound = document.getElementById("obstacle-sound");
+
         let score = 0;
-        let timeLeft = 30;
-        let currentLevel = 1;
-        let timerInterval;
-        let leaderboard = [];
+        let speed = 2000;
+        let obstacles = [];
 
-        const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
-        const timerDisplay = document.getElementById('timer');
-        const startBtn = document.getElementById('start-btn');
-        const clickBtn = document.getElementById('click-btn');
-        const leaderboardList = document.getElementById('leaderboard-list');
-        const clickSound = document.getElementById('click-sound');
-
-        startBtn.addEventListener('click', startGame);
-        clickBtn.addEventListener('click', handleClick);
-
-        function startGame() {
-            score = 0;
-            timeLeft = 30;
-            currentLevel = 1;
-            scoreDisplay.textContent = "Score: " + score;
-            levelDisplay.textContent = "Level: " + currentLevel;
-            timerDisplay.textContent = "Time: " + timeLeft + "s";
-            startBtn.style.display = 'none';
-            clickBtn.style.display = 'inline-block';
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = "Time: " + timeLeft + "s";
-                if (timeLeft <= 0) {
-                    nextLevelOrEndGame();
-                }
-            }, 1000);
+        function moveChicken() {
+            const x = Math.random() * (gameContainer.offsetWidth - chicken.offsetWidth);
+            const y = Math.random() * (gameContainer.offsetHeight - chicken.offsetHeight);
+            chicken.style.left = `${x}px`;
+            chicken.style.top = `${y}px`;
         }
 
-        function handleClick(event) {
-            score += currentLevel; // Points increase with level
-            scoreDisplay.textContent = "Score: " + score;
-            playClickSound();
-            createExplosion(event.clientX, event.clientY);
+        function createObstacle() {
+            const obstacle = document.createElement("div");
+            obstacle.classList.add("obstacle");
+            const x = Math.random() * (gameContainer.offsetWidth - 60);
+            const y = Math.random() * (gameContainer.offsetHeight - 60);
+            obstacle.style.left = `${x}px`;
+            obstacle.style.top = `${y}px`;
+            gameContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+            setTimeout(() => {
+                obstacle.remove();
+                obstacles = obstacles.filter((o) => o !== obstacle);
+            }, 5000);
         }
 
-        function playClickSound() {
-            clickSound.currentTime = 0;
-            clickSound.play();
-        }
-
-        function createExplosion(x, y) {
-            const explosion = document.createElement('div');
-            explosion.classList.add('explosion-effect');
-            explosion.style.left = `${x - 50}px`;
-            explosion.style.top = `${y - 50}px`;
-            document.body.appendChild(explosion);
-            setTimeout(() => explosion.remove(), 1000);
-        }
-
-        function nextLevelOrEndGame() {
-            clearInterval(timerInterval);
-            if (currentLevel < 3) {
-                currentLevel++;
-                levelDisplay.textContent = "Level: " + currentLevel;
-                timeLeft = 30 - currentLevel * 5; // Decrease time for higher levels
-                timerDisplay.textContent = "Time: " + timeLeft + "s";
-                startLevel();
-            } else {
-                endGame();
+        chicken.addEventListener("click", () => {
+            score++;
+            scoreboard.textContent = `Score: ${score}`;
+            chickenSound.currentTime = 0;
+            chickenSound.play();
+            moveChicken();
+            speed = Math.max(500, speed - 50);
+            clearInterval(chickenInterval);
+            chickenInterval = setInterval(moveChicken, speed);
+            if (score % 5 === 0) {
+                createObstacle();
             }
-        }
+        });
 
-        function startLevel() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = "Time: " + timeLeft + "s";
-                if (timeLeft <= 0) {
-                    nextLevelOrEndGame();
-                }
-            }, 1000);
-        }
+        gameContainer.addEventListener("click", (e) => {
+            if (!e.target.classList.contains("obstacle") && e.target !== chicken) {
+                score = Math.max(0, score - 1);
+                scoreboard.textContent = `Score: ${score}`;
+                obstacleSound.currentTime = 0;
+                obstacleSound.play();
+            }
+        });
 
-        function endGame() {
-            clickBtn.style.display = 'none';
-            startBtn.style.display = 'inline-block';
-            timerDisplay.textContent = "Game Over! Final Score: " + score;
-            updateLeaderboard(score);
-        }
-
-        function updateLeaderboard(newScore) {
-            leaderboard.push(newScore);
-            leaderboard.sort((a, b) => b - a); // Sort descending
-            leaderboardList.innerHTML = '';
-            leaderboard.forEach((score, index) => {
-                leaderboardList.innerHTML += `<li>${index + 1}. ${score}</li>`;
-            });
-        }
+        let chickenInterval = setInterval(moveChicken, speed);
     </script>
 </body>
 </html>
